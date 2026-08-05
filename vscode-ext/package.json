@@ -1,0 +1,76 @@
+{
+  "name": "woolan",
+  "displayName": "Woolan Language Support",
+  "description": "Syntax highlighting, completion, formatting and syntax checking for the Woolan language (.woo)",
+  "version": "0.1.1",
+  "publisher": "woolan",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Linters"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:woolan"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "woolan",
+        "aliases": [
+          "Woolan",
+          "woolan"
+        ],
+        "extensions": [
+          ".woo"
+        ],
+        "configuration": "./woolan-language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "woolan",
+        "scopeName": "source.woolan",
+        "path": "./syntaxes/woolan.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "woolan.runFile",
+        "title": "Run Woolan File"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "woolan.runFile",
+          "group": "navigation",
+          "when": "resourceLangId == woolan"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "woolan.runFile",
+          "group": "navigation",
+          "when": "resourceLangId == woolan"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.js --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --target=node16",
+    "watch": "esbuild src/extension.js --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --target=node16 --watch",
+    "package": "npm run build && vsce package",
+    "vscode:prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "^18.0.0",
+    "esbuild": "^0.20.0",
+    "@vscode/vsce": "^2.24.0"
+  }
+}

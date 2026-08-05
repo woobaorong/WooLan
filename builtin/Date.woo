@@ -1,0 +1,37 @@
+// Date.woo - Built-in Date class
+// Native implementation in builtins.js
+
+class Date {
+    // Constructor: creates a Date instance
+    // Date() - current time
+    // Date(timestamp) - from Unix timestamp in milliseconds
+    Date init(int timestamp)
+
+    // Get current timestamp in milliseconds
+    int now()
+
+    // Get year
+    int getYear()
+
+    // Get month (1-12)
+    int getMonth()
+
+    // Get day of month
+    int getDay()
+
+    // Get hours (0-23)
+    int getHours()
+
+    // Get minutes (0-59)
+    int getMinutes()
+
+    // Get seconds (0-59)
+    int getSeconds()
+
+    // Format date using pattern
+    // YYYY - year, MM - month, DD - day
+    // HH - hours, mm - minutes, ss - seconds
+    String format(String pattern)
+
+    String toString()
+}

@@ -1,0 +1,5 @@
+// TimeCallbacker - built-in interface for asynchronous timer callbacks.
+// Implement onTime() on a subclass and pass an instance to sys.wait(callbacker, ms).
+class TimeCallbacker {
+    void onTime()
+}

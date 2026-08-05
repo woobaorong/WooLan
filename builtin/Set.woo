@@ -1,0 +1,24 @@
+// Set.woo - Built-in Set class (unique elements)
+// Native implementation in builtins.js
+
+class Set {
+    // Add element
+    void add(Object element)
+
+    // Check if contains element
+    bool contains(Object element)
+
+    // Remove element
+    void remove(Object element)
+
+    // Get size
+    int size()
+
+    // Clear all elements
+    void clear()
+
+    // Convert to list
+    List toList()
+
+    String toString()
+}

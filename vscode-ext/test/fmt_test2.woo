@@ -1,0 +1,14 @@
+class A {
+    int x = 1
+    void f() {
+        if (x == 1) {
+            sys.println("y")
+        } else {
+            sys.println("n")
+        }
+    }
+}
+A a = A()
+int p = 1;
+int q = 2;
+float f = 1.0

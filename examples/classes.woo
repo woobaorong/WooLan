@@ -1,0 +1,39 @@
+// classes.woo - classes, init constructor, this, dynamic dispatch
+
+class Animal {
+    String name = "animal"
+
+    Animal init(String n) {
+        this.name = n
+        return this
+    }
+
+    void speak() {
+        sys.println("...")
+    }
+}
+
+class Dog extends Animal {
+    void speak() {
+        sys.println(this.name + " says woof")
+    }
+}
+
+class Cat extends Animal {
+    void speak() {
+        sys.println(this.name + " says meow")
+    }
+}
+
+// dynamic dispatch: A-typed variable holds a Dog -> calls Dog.speak
+Animal a = Dog("Rex")
+a.speak()
+
+Animal b = Cat("Mimi")
+b.speak()
+
+Dog d = Dog("Buddy")
+d.speak()
+sys.println(sys.is(Dog, a))
+sys.println(sys.is(Cat, a))
+sys.println(sys.is(Animal, d))

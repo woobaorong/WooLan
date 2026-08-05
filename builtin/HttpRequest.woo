@@ -1,0 +1,24 @@
+// HttpRequest.woo - Built-in HttpRequest class
+// Native implementation in builtins.js
+
+class HttpRequest {
+    // Set request URL
+    void setUrl(String url)
+
+    // Set HTTP method (GET, POST, PUT, DELETE, etc.)
+    void setMethod(String method)
+
+    // Add header
+    void addHeader(String name, String value)
+
+    // Set request body
+    void setBody(String body)
+
+    // Send request synchronously (using curl)
+    // Returns response body as string
+    String send()
+
+    // Send request asynchronously with callback
+    // The callback's onResponse(body) method will be called when complete
+    void send(HttpCallbacker callback)
+}

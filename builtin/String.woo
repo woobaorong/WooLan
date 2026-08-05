@@ -1,0 +1,290 @@
+// String.woo - Built-in String class, wraps char[] for character storage
+// String s = "Hello" is syntactic sugar for:
+//   char[] arr = ['H','e','l','l','o']
+//   String s = String()
+//   s._data = arr
+//
+// Native sys methods provide the bridge between char[] and internal representation:
+//   sys.strToCharArray(String) -> char[]
+//   sys.charArrayToStr(char[]) -> String
+
+class String {
+    // Internal char array storage
+    char[] _data = []
+
+    // Default constructor: empty string
+    String init() {
+        return this
+    }
+
+    // Construct from a char array
+    String initFromChars(char[] chars) {
+        this._data = chars
+        return this
+    }
+
+    // Get string length
+    int length() {
+        return this._data.size()
+    }
+
+    // Get character at index
+    char charAt(int index) {
+        return this._data[index]
+    }
+
+    // Extract substring from start to end (exclusive)
+    String substring(int start) {
+        int len = this.length()
+        char[] arr = char[len - start]
+        int j = 0
+        for (int i = start; i < len; i = i + 1) {
+            arr[j] = this._data[i]
+            j = j + 1
+        }
+        String result = String()
+        result._data = arr
+        return result
+    }
+
+    // Extract substring with end index
+    String substringRange(int start, int end) {
+        char[] arr = char[end - start]
+        int j = 0
+        for (int i = start; i < end; i = i + 1) {
+            arr[j] = this._data[i]
+            j = j + 1
+        }
+        String result = String()
+        result._data = arr
+        return result
+    }
+
+    // Find index of substring, -1 if not found
+    int indexOf(String other) {
+        int thisLen = this.length()
+        int otherLen = other.length()
+        if (otherLen == 0) {
+            return 0
+        }
+        for (int i = 0; i <= thisLen - otherLen; i = i + 1) {
+            bool found = true
+            for (int j = 0; j < otherLen; j = j + 1) {
+                if (this._data[i + j] != other._data[j]) {
+                    found = false
+                    break
+                }
+            }
+            if (found) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    // Check if equals to another string
+    bool equals(String other) {
+        int thisLen = this.length()
+        int otherLen = other.length()
+        if (thisLen != otherLen) {
+            return false
+        }
+        for (int i = 0; i < thisLen; i = i + 1) {
+            if (this._data[i] != other._data[i]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // Convert to lowercase
+    String toLowerCase() {
+        int len = this.length()
+        char[] arr = char[len]
+        for (int i = 0; i < len; i = i + 1) {
+            char c = this._data[i]
+            if (c >= 'A' && c <= 'Z') {
+                arr[i] = char(int(c) + 32)
+            } else {
+                arr[i] = c
+            }
+        }
+        String result = String()
+        result._data = arr
+        return result
+    }
+
+    // Convert to uppercase
+    String toUpperCase() {
+        int len = this.length()
+        char[] arr = char[len]
+        for (int i = 0; i < len; i = i + 1) {
+            char c = this._data[i]
+            if (c >= 'a' && c <= 'z') {
+                arr[i] = char(int(c) - 32)
+            } else {
+                arr[i] = c
+            }
+        }
+        String result = String()
+        result._data = arr
+        return result
+    }
+
+    // Check if starts with prefix
+    bool startsWith(String prefix) {
+        int thisLen = this.length()
+        int prefixLen = prefix.length()
+        if (prefixLen > thisLen) {
+            return false
+        }
+        for (int i = 0; i < prefixLen; i = i + 1) {
+            if (this._data[i] != prefix._data[i]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // Check if ends with suffix
+    bool endsWith(String suffix) {
+        int thisLen = this.length()
+        int suffixLen = suffix.length()
+        if (suffixLen > thisLen) {
+            return false
+        }
+        int offset = thisLen - suffixLen
+        for (int i = 0; i < suffixLen; i = i + 1) {
+            if (this._data[offset + i] != suffix._data[i]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // Check if contains substring
+    bool contains(String sub) {
+        return this.indexOf(sub) >= 0
+    }
+
+    // Replace all occurrences of old with new
+    String replace(String oldStr, String newStr) {
+        int thisLen = this.length()
+        int oldLen = oldStr.length()
+        int newLen = newStr.length()
+        List parts = List()
+        int lastEnd = 0
+        int idx = this.indexOf(oldStr)
+        while (idx >= 0) {
+            if (idx > lastEnd) {
+                parts.add(this.substringRange(lastEnd, idx))
+            }
+            parts.add(newStr)
+            lastEnd = idx + oldLen
+            if (lastEnd >= thisLen) {
+                break
+            }
+            String remaining = this.substring(lastEnd)
+            idx = lastEnd + remaining.indexOf(oldStr)
+            if (idx < lastEnd) {
+                idx = -1
+            }
+        }
+        if (lastEnd < thisLen) {
+            parts.add(this.substring(lastEnd))
+        }
+        // Join parts
+        int totalLen = 0
+        for (int i = 0; i < parts.size(); i = i + 1) {
+            totalLen = totalLen + parts.get(i).length()
+        }
+        char[] arr = char[totalLen]
+        int pos = 0
+        for (int i = 0; i < parts.size(); i = i + 1) {
+            String p = parts.get(i)
+            for (int j = 0; j < p.length(); j = j + 1) {
+                arr[pos] = p._data[j]
+                pos = pos + 1
+            }
+        }
+        String result = String()
+        result._data = arr
+        return result
+    }
+
+    // Split by delimiter
+    List split(String delimiter) {
+        List result = List()
+        if (delimiter.length() == 0) {
+            result.add(this)
+            return result
+        }
+        int start = 0
+        int thisLen = this.length()
+        int delimLen = delimiter.length()
+        int idx = this.indexOf(delimiter)
+        while (idx >= 0) {
+            result.add(this.substringRange(start, idx))
+            start = idx + delimLen
+            if (start >= thisLen) {
+                break
+            }
+            String remaining = this.substring(start)
+            idx = start + remaining.indexOf(delimiter)
+            if (idx < start) {
+                idx = -1
+            }
+        }
+        if (start <= thisLen) {
+            result.add(this.substring(start))
+        }
+        return result
+    }
+
+    // Remove leading/trailing whitespace
+    String trim() {
+        int len = this.length()
+        int start = 0
+        int end = len
+        while (start < end) {
+            char c = this._data[start]
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                start = start + 1
+            } else {
+                break
+            }
+        }
+        while (end > start) {
+            char c = this._data[end - 1]
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+                end = end - 1
+            } else {
+                break
+            }
+        }
+        return this.substringRange(start, end)
+    }
+
+    // Parse as integer
+    int toInt() {
+        return sys.str2int(sys.charArrayToStr(this._data))
+    }
+
+    // Parse as float
+    float toFloat() {
+        return sys.str2float(sys.charArrayToStr(this._data))
+    }
+
+    // String concatenation using +
+    // (handled by interpreter's binary + operator)
+
+    // Convert to string (returns this)
+    String toString() {
+        return this
+    }
+
+    // Get the internal char array (for sys bridge)
+    char[] toCharArray() {
+        return this._data
+    }
+}

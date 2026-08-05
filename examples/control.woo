@@ -1,0 +1,37 @@
+// control.woo - for / while / if / elseif / else / break / continue
+
+int sum = 0
+for (int i = 1; i <= 10; i = i + 1) {
+    sum = sum + i
+}
+sys.println("sum 1..10 = " + sys.int2str(sum))
+
+// break / continue
+int evens = 0
+for (int i = 1; i <= 20; i = i + 1) {
+    if (i == 15) {
+        break
+    }
+    if (i - i / 2 * 2 != 0) {
+        continue
+    }
+    evens = evens + 1
+}
+sys.println("evens before 15 = " + sys.int2str(evens))
+
+// while
+int n = 3
+while (n > 0) {
+    sys.println("n = " + sys.int2str(n))
+    n = n - 1
+}
+
+// if / elseif / else
+int x = 5
+if (x > 10) {
+    sys.println("big")
+} elseif (x > 3) {
+    sys.println("medium")
+} else {
+    sys.println("small")
+}

@@ -1,0 +1,15 @@
+{
+  "name": "woolan",
+  "version": "0.1.0",
+  "description": "Woolan scripting language interpreter (Node.js reference implementation)",
+  "main": "index.js",
+  "bin": {
+    "woolan": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node index.js examples/hello.woo"
+  },
+  "keywords": ["woolan", "language", "interpreter"],
+  "license": "MIT"
+}

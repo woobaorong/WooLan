@@ -1,0 +1,8 @@
+class CC{
+    void test(){
+       sys.println("test");
+    }
+}
+
+CC c= CC();
+c.test()

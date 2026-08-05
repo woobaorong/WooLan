@@ -1,0 +1,17 @@
+// arrays.woo - fixed-length typed arrays
+int[3] arr = [1, 2, 3]
+sys.println(arr[0])
+sys.println(arr[2])
+arr[1] = 42
+sys.println(arr[1])
+
+char[3] chs = ['a', 'b', 'c']
+sys.println(chs[0])
+sys.println(chs[2])
+
+// iterate with for
+int sum = 0
+for (int i = 0; i < 3; i = i + 1) {
+    sum = sum + arr[i]
+}
+sys.println("sum = " + sys.int2str(sum))

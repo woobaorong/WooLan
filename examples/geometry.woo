@@ -1,0 +1,15 @@
+// geometry.woo - a module exporting a class (used by modules.woo)
+class Point {
+    int x = 0
+    int y = 0
+
+    Point init(int x, int y) {
+        this.x = x
+        this.y = y
+        return this
+    }
+
+    int distanceSquared() {
+        return this.x * this.x + this.y * this.y
+    }
+}

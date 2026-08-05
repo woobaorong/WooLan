@@ -1,0 +1,30 @@
+// Map.woo - Built-in Map class (key-value dictionary)
+// Native implementation in builtins.js
+
+class Map {
+    // Put key-value pair
+    void put(Object key, Object value)
+
+    // Get value by key, null if not found
+    Object get(Object key)
+
+    // Remove key-value pair
+    Object remove(Object key)
+
+    // Check if contains key
+    bool containsKey(Object key)
+
+    // Get size
+    int size()
+
+    // Get all keys
+    List keys()
+
+    // Get all values
+    List values()
+
+    // Clear all entries
+    void clear()
+
+    String toString()
+}

@@ -1,0 +1,53 @@
+// abstract.woo - abstract methods (unimplemented) for abstract classes / interfaces
+
+class Shape {
+    // abstract method: declared without a body
+    float area()
+
+    // concrete method calling the abstract one (dynamic dispatch)
+    void describe() {
+        sys.println("area = " + sys.float2str(this.area()))
+    }
+}
+
+class Rect extends Shape {
+    float w = 0.0
+    float h = 0.0
+
+    Rect init(float w, float h) {
+        this.w = w
+        this.h = h
+        return this
+    }
+
+    float area() {
+        return this.w * this.h
+    }
+}
+
+Rect r = Rect(3.0, 4.0)
+r.describe()
+sys.println(sys.is(Shape, r))
+
+
+
+class BB {
+    void m() {
+        sys.println("BB.m")
+    }
+}
+
+
+class VCV{
+    BB bb
+    BB init(){
+        return this.bb
+    }
+
+    int chen(){
+        return 3/7
+    }
+}
+
+// VCV() auto-runs init(), and the BB bb field auto-constructs -> fully initialized
+VCV().init().bb.m()

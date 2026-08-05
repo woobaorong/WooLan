@@ -1,0 +1,23 @@
+// null.woo - null literal support
+String s = null
+if (s == null) {
+    sys.println("s is null")
+}
+
+Object o = null
+sys.println(sys.bool2str(o == null))
+
+class Node {
+    int val = 0
+    Node next = null
+    Node init(int v) {
+        this.val = v
+        return this
+    }
+}
+
+Node head = Node(1)
+head.next = Node(2)
+sys.println(head.val)
+sys.println(head.next.val)
+sys.println(sys.bool2str(head.next.next == null))

@@ -1,0 +1,33 @@
+// List.woo - Built-in List class (dynamic array)
+// Native implementation in builtins.js
+
+class List {
+    // Add element to the end
+    void add(Object element)
+
+    // Get element at index
+    Object get(int index)
+
+    // Set element at index
+    void set(int index, Object element)
+
+    // Get size
+    int size()
+
+    // Remove element at index
+    Object removeAt(int index)
+
+    // Clear all elements
+    void clear()
+
+    // Check if empty
+    bool isEmpty()
+
+    // Find index of element, -1 if not found
+    int indexOf(Object element)
+
+    // Check if contains element
+    bool contains(Object element)
+
+    String toString()
+}

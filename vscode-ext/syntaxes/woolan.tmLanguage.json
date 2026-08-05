@@ -1,0 +1,93 @@
+{
+  "scopeName": "source.woolan",
+  "name": "Woolan",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#chars" },
+    { "include": "#numbers" },
+    { "include": "#constants" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#class-names" },
+    { "include": "#functions" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.woolan",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.woolan",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "captures": { "0": { "name": "punctuation.definition.comment.woolan" } }
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.woolan",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.woolan" }
+      ]
+    },
+    "chars": {
+      "name": "string.quoted.single.woolan",
+      "match": "'(\\\\.|[^'\\\\])'",
+      "comment": "single character literal"
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.woolan",
+          "match": "\\b\\d+\\.\\d+([eE][+-]?\\d+)?\\b"
+        },
+        {
+          "name": "constant.numeric.float.woolan",
+          "match": "\\b\\d+[eE][+-]?\\d+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.woolan",
+          "match": "\\b\\d+\\b"
+        }
+      ]
+    },
+    "constants": {
+      "name": "constant.language.woolan",
+      "match": "\\b(true|false|null)\\b"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.woolan",
+          "match": "\\b(if|elseif|else|for|while|break|continue|return)\\b"
+        },
+        {
+          "name": "keyword.other.woolan",
+          "match": "\\b(class|extends|this|package|import)\\b"
+        }
+      ]
+    },
+    "types": {
+      "name": "support.type.primitive.woolan",
+      "match": "\\b(int|float|bool|char|void)\\b"
+    },
+    "class-names": {
+      "name": "support.class.builtin.woolan",
+      "match": "\\b(Object|String|List|Map|Set|Date|File|HttpRequest|sys|TimeCallbacker|HttpCallbacker)\\b"
+    },
+    "functions": {
+      "name": "entity.name.function.woolan",
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()"
+    },
+    "operators": {
+      "name": "keyword.operator.woolan",
+      "match": "(==|!=|<=|>=|&&|\\|\\||[+\\-*/=<>!])"
+    }
+  }
+}

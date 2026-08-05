@@ -1,0 +1,55 @@
+设计一个本脚本语言名叫woolan,语法极简易学,计划最终用c来实现,可以先用nodejs实现,详情如下
+
+关键字 
+int float bool char void return class this extends for while if elseif else break coutinue package import
+
+脚本后缀 .woo
+
+基本类型,默认是0,0,false,''
+int float bool char
+
+引用类型对象,默认是null
+
+定义变量
+int xxx=12
+
+定义数组,长度固定不可变
+int[3] xxx= [1,2,3]
+char[3] xxx= ['a','b','c']
+
+访问数组 int xx=xxx[0] 
+
+定义类,多继承,方便组合,
+class XX extends A,B,C{
+	int a =12
+	float b=13.5
+	void d (){
+		return this.a 
+	}
+    XX init (){
+	    return this
+	}
+}
+
+创建对象,先执行字段赋值操作,比如 a=12,b=13.5,然后调用构造函数(如果提供了的话),构造函数一律是init(),自动调用,这个函数名系统占用
+XX xx = XX()  //无需new
+
+
+方法一定归属于类,可以不实现,来实现抽象类,接口
+this永远指向方法归属的对象本身
+只有int,float类型支持+-*/运算,string支持+,不允许自动改变类型,比如1+0.2,也不允许+= -= =+ ...各种语法糖,int之间可以%,结果还是int
+
+提供基础内置对象sys,
+sys.print(String)
+sys.wait(TimeCallbacker,2)
+sys.str2int/int2str/int2float/float2int
+sys.is(ClassName,obj)
+...
+
+提供基础内置类Object,String,List,Map,Set,Date,HttpRequest,File...这些内置的类都是.woo文件,是对sys提供的系统方法的封装,容器是对数组的封装
+还要提供一些基础的内置接口,比如TimeCallbacker,HttpCallbacker
+
+容器泛型?无需,应用类型一律都是Object
+变量/函数重载?一律调用最外层的方法实现B extend A, A a=B() a.hehe() 调用的时B的hehe 找不到才调用A的hehe
+
+package/import 模块化逻辑等同于C# 命名空间

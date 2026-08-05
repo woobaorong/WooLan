@@ -1,0 +1,16 @@
+// strings.woo - String built-in class methods
+String s = "Hello, Woolan!"
+sys.println(s.length())
+sys.println(s.substring(0, 5))
+sys.println(s.toUpperCase())
+sys.println(s.toLowerCase())
+sys.println(s.indexOf("Woolan"))
+sys.println(s.contains("World"))
+sys.println(s.replace("Hello", "Hi"))
+sys.println(s.startsWith("Hello"))
+sys.println(s.endsWith("!"))
+
+List parts = s.split(", ")
+sys.println(parts.size())
+sys.println(parts.get(0))
+sys.println(parts.get(1))

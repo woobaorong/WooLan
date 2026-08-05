@@ -1,0 +1,5 @@
+class A{int x=1+2
+void f(int a,int b){return a+b}}
+A a=A()
+int[3] arr=[1,2,3]
+if(a!=null){sys.println("y")}else{sys.println("n")}

@@ -1,0 +1,21 @@
+// modules.woo - package & import across files
+package demo
+
+import geometry
+
+Point p = Point(3, 4)
+sys.println(p.distanceSquared())
+
+Date d = Date()
+sys.println(d.format("YYYY-MM-DD HH:mm:ss"))
+
+float f = 1.0
+sys.println(f)
+
+int asda = 10
+
+while (asda > 0) {
+    asda = asda - 1
+    sys.println(asda)
+    sys.wait(100)
+}

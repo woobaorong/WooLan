@@ -1,0 +1,13 @@
+// Object.woo - Built-in Object class (base class for all objects)
+// Native implementation in builtins.js
+
+class Object {
+    // Get string representation
+    String toString()
+
+    // Check if equals to another object
+    bool equals(Object other)
+
+    // Get class name
+    String getClass()
+}

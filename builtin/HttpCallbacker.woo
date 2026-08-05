@@ -1,0 +1,5 @@
+// HttpCallbacker - built-in interface for asynchronous HTTP response callbacks.
+// Implement onResponse(body) on a subclass and pass an instance to HttpRequest.send(callbacker).
+class HttpCallbacker {
+    void onResponse(String body)
+}

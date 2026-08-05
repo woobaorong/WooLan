@@ -1,0 +1,25 @@
+// File.woo - Built-in File class
+// Native implementation in builtins.js
+
+class File {
+    // Constructor: creates a File instance
+    File init(String path)
+
+    // Read entire file content as string
+    String read()
+
+    // Write string to file
+    void write(String content)
+
+    // Append string to file
+    void append(String content)
+
+    // Check if file exists
+    bool exists()
+
+    // Delete file
+    void delete()
+
+    // Get file size in bytes
+    int size()
+}

@@ -1,0 +1,43 @@
+// multi.woo - multiple inheritance & method resolution
+
+class Walker {
+    void walk() {
+        sys.println("walking")
+    }
+}
+
+class Talker {
+    void talk() {
+        sys.println("talking")
+    }
+}
+
+// multiple inheritance: combine Walker and Talker
+class Person extends Walker, Talker {
+    String name = ""
+
+    Person init(String n) {
+        this.name = n
+        return this
+    }
+
+    void intro() {
+        sys.print("I am ")
+        sys.println(this.name)
+    }
+}
+
+Person p = Person("Ada")
+p.walk()
+p.talk()
+p.intro()
+
+// most-derived override: B overrides hello, A defines hello
+class A {
+    void hello() { sys.println("A.hello") }
+}
+class B extends A {
+    void hello() { sys.println("B.hello") }
+}
+A ref = B()
+ref.hello()
