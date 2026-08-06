@@ -15,6 +15,7 @@ const {
   registerBuiltins, toDisplay, NativeClass,
   ObjectClass, StringClass, ListClass, MapClass, SetClass, DateClass, FileClass, HttpRequestClass, ArrayClass,
 } = require('./builtins');
+const { resolveImport } = require('./modules');
 
 // ---- control-flow signals ----
 class ReturnSignal extends Error { constructor(v) { super('return'); this.value = v; } }
@@ -72,6 +73,7 @@ class Interpreter {
     this.globalEnv = new Environment();
     this.loadedModules = new Set();
     this.baseDir = '.';
+    this.projectRoot = '.';        // Project root (entry script directory)
     registerBuiltins(this);
     this.loadBuiltins();
   }
@@ -146,15 +148,45 @@ class Interpreter {
 
   importModule(name) {
     if (this.loadedModules.has(name)) return;
-    const candidate = path.join(this.baseDir, name + '.woo');
-    if (!fs.existsSync(candidate)) throw new WoolanError("cannot find module '" + name + "' at " + candidate);
+
+    // Use shared module resolver
+    const parseFn = (src) => {
+      const { tokenize } = require('./lexer');
+      const { parse } = require('./parser');
+      return parse(tokenize(src));
+    };
+
+    const result = resolveImport(name, this.baseDir, this.projectRoot, parseFn);
+
+    if (!result) {
+      const modulePath = name.replace(/\./g, path.sep);
+      const candidate = path.join(this.baseDir, modulePath + '.woo');
+      throw new WoolanError("cannot find module '" + name + "' (no file at " + candidate + " and no package '" + name + "' found)");
+    }
+
+    if (result.type === 'file') {
+      this.loadModuleFile(name, result.path);
+    } else if (result.type === 'package') {
+      this.loadedModules.add(name);
+      for (const filePath of result.paths) {
+        this.loadModuleFile(name + ':' + filePath, filePath);
+      }
+    }
+  }
+
+  loadModuleFile(name, filePath) {
+    if (this.loadedModules.has(name)) return;
     this.loadedModules.add(name);
-    const src = fs.readFileSync(candidate, 'utf8');
+    const src = fs.readFileSync(filePath, 'utf8');
     const { tokenize } = require('./lexer');
     const { parse } = require('./parser');
     const ast = parse(tokenize(src));
+    // Temporarily set baseDir to the module's directory for relative imports
+    const savedBaseDir = this.baseDir;
+    this.baseDir = path.dirname(filePath);
     this.processImports(ast);     // nested imports first
     this.registerClasses(ast);    // register this module's classes
+    this.baseDir = savedBaseDir;  // Restore baseDir
     // top-level statements of imported modules are not executed
   }
 
@@ -182,6 +214,7 @@ class Interpreter {
   // ====================================================================
   run(program, baseDir) {
     this.baseDir = baseDir || this.baseDir;
+    this.projectRoot = this.baseDir;  // Save project root (entry script directory)
     this.processImports(program);
     this.registerClasses(program);
     for (const stmt of program.body) {
@@ -218,18 +251,28 @@ class Interpreter {
       const elemType = node.varType;
       const items = [];
       if (node.init) {
-        if (node.init.kind !== 'ArrayLit') throw new WoolanError('array declaration requires an array literal');
-        if (node.init.elements.length !== node.arraySize) {
-          throw new WoolanError('array size mismatch: declared ' + node.arraySize + ', got ' + node.init.elements.length);
+        if (node.init.kind === 'ArrayLit') {
+          // Initialize with array literal: int[] arr = [1, 2, 3]
+          for (const el of node.init.elements) {
+            const v = this.eval(el, env);
+            this.typeCheck(elemType, v);
+            items.push(v);
+          }
+        } else if (node.init.kind === 'ArrayCtor') {
+          // Initialize with array constructor: int[] arr = int[5]
+          const sizeVal = this.eval(node.init.size, env);
+          if (!(sizeVal instanceof Val) || sizeVal.type !== 'int') {
+            throw new WoolanError('array size must be int');
+          }
+          const size = sizeVal.value;
+          for (let i = 0; i < size; i++) {
+            items.push(defaultValue(elemType));
+          }
+        } else {
+          throw new WoolanError('array declaration requires array literal or constructor');
         }
-        for (const el of node.init.elements) {
-          const v = this.eval(el, env);
-          this.typeCheck(elemType, v);
-          items.push(v);
-        }
-      } else {
-        for (let i = 0; i < node.arraySize; i++) items.push(defaultValue(elemType));
       }
+      // If no init, items is empty array
       env.define(node.name, elemType + '[]', this.makeArray(elemType, items));
       return;
     }
@@ -290,6 +333,21 @@ class Interpreter {
       case 'ArrayLit': {
         const items = node.elements.map(e => this.eval(e, env));
         return this.makeArray('Object', items);
+      }
+      case 'ArrayCtor': {
+        // Array constructor: char[5], int[n], MyClass[size]
+        const elemType = node.elemType;
+        if (!node.size) throw new WoolanError('array size required');
+        const sizeVal = this.eval(node.size, env);
+        if (!(sizeVal instanceof Val) || sizeVal.type !== 'int') {
+          throw new WoolanError('array size must be int');
+        }
+        const size = sizeVal.value;
+        const items = [];
+        for (let i = 0; i < size; i++) {
+          items.push(defaultValue(elemType));
+        }
+        return this.makeArray(elemType, items);
       }
       case 'Field': return this.evalField(node, env);
       case 'Index': return this.evalIndex(node, env);
@@ -599,6 +657,8 @@ class Interpreter {
       if (e instanceof ReturnSignal) return e.value;
       throw e;
     }
+    // Constructor automatically returns 'this'
+    if (methodAst.isConstructor) return instance;
     return null;
   }
 
@@ -617,8 +677,7 @@ class Interpreter {
     this.initFields(inst, classValue, guard);
     const init = this.lookupMethod(classValue, 'init');
     if (init && init.kind !== 'Native') {
-      const ret = this.invokeUserMethod(init, inst, args);
-      if (ret instanceof WooInstance) return ret;
+      this.invokeUserMethod(init, inst, args);
     }
     return inst;
   }

@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const { tokenize } = require('../../src/lexer');
 const { parse } = require('../../src/parser');
+const { resolveImport } = require('../../src/modules');
 
 class WoolanDefinitionProvider {
   provideDefinition(document, position, token) {
@@ -145,30 +146,41 @@ class WoolanDefinitionProvider {
     const imports = ast.body.filter(n => n.kind === 'Import');
     if (imports.length === 0) return;
 
-    // Get base directory for resolving imports
+    // Get base directory and project root for resolving imports
     const baseDir = path.dirname(currentDocument.uri.fsPath);
+    const projectRoot = baseDir;
+
+    // Parse function for resolveImport
+    const parseFn = (src) => parse(tokenize(src));
 
     for (const imp of imports) {
-      // For each imported module
       for (const moduleName of imp.names) {
-        // Try to find the module file
-        const modulePath = path.join(baseDir, moduleName + '.woo');
-        if (!fs.existsSync(modulePath)) continue;
-
         try {
-          const moduleSrc = fs.readFileSync(modulePath, 'utf8');
-          const moduleAst = parse(tokenize(moduleSrc));
-          const moduleUri = vscode.Uri.file(modulePath);
+          // Use shared resolveImport for package import support
+          const result = resolveImport(moduleName, baseDir, projectRoot, parseFn);
+          if (!result) continue;
 
-          // Check if the class exists in this module
-          for (const stmt of moduleAst.body) {
-            if (stmt.kind === 'Class' && stmt.name === name) {
-              this.findDefinitionInAST(moduleAst, name, moduleUri, definitions);
-              if (definitions.length > 0) return;
+          const files = result.type === 'file' ? [result.path] : result.paths;
+
+          for (const modulePath of files) {
+            try {
+              const moduleSrc = fs.readFileSync(modulePath, 'utf8');
+              const moduleAst = parse(tokenize(moduleSrc));
+              const moduleUri = vscode.Uri.file(modulePath);
+
+              // Check if the class exists in this module
+              for (const stmt of moduleAst.body) {
+                if (stmt.kind === 'Class' && stmt.name === name) {
+                  this.findDefinitionInAST(moduleAst, name, moduleUri, definitions);
+                  if (definitions.length > 0) return;
+                }
+              }
+            } catch (e) {
+              // Ignore parse errors in imported modules
             }
           }
         } catch (e) {
-          // Ignore parse errors in imported modules
+          // Ignore errors
         }
       }
     }

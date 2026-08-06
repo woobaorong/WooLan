@@ -3,7 +3,7 @@
 
 class File {
     // Constructor: creates a File instance
-    File init(String path)
+    init(String path)
 
     // Read entire file content as string
     String read()

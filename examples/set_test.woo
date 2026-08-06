@@ -1,0 +1,67 @@
+// Set Test - Test all Set methods
+
+// Test 1: Create empty set
+Set set1 = Set()
+sys.println("Test 1 - empty set size: " + sys.int2str(set1.size()))
+
+// Test 2: Add elements
+set1.add("Apple")
+set1.add("Banana")
+set1.add("Cherry")
+sys.println("Test 2 - add size: " + sys.int2str(set1.size()))
+
+// Test 3: Add duplicate (should not increase size)
+set1.add("Apple")
+sys.println("Test 3 - add duplicate size: " + sys.int2str(set1.size()))
+
+// Test 4: Contains
+bool hasApple = set1.contains("Apple")
+sys.println("Test 4 - contains('Apple'): " + sys.bool2str(hasApple))
+
+// Test 5: Remove
+set1.remove("Banana")
+sys.println("Test 5 - remove size: " + sys.int2str(set1.size()))
+
+// Test 6: Is empty (check size == 0)
+bool empty = set1.size() == 0
+sys.println("Test 6 - isEmpty (size==0): " + sys.bool2str(empty))
+
+// Test 7: Clear
+Set set2 = Set()
+set2.add("X")
+set2.clear()
+sys.println("Test 7 - clear size: " + sys.int2str(set2.size()))
+
+// Test 8: To list
+List items = set1.toList()
+sys.println("Test 8 - toList size: " + sys.int2str(items.size()))
+
+// Test 9: Iterate list
+Set numSet = Set()
+numSet.add(1)
+numSet.add(2)
+numSet.add(3)
+int sum = 0
+List numList = numSet.toList()
+for (int i = 0; i < numList.size(); i = i + 1) {
+    sum = sum + numList.get(i)
+}
+sys.println("Test 9 - iterate sum: " + sys.int2str(sum))
+
+// Test 10: Mixed types
+Set mixed = Set()
+mixed.add("string")
+mixed.add(123)
+mixed.add(true)
+sys.println("Test 10 - mixed set size: " + sys.int2str(mixed.size()))
+
+// Test 11: Multiple removes
+Set fruits = Set()
+fruits.add("A")
+fruits.add("B")
+fruits.add("C")
+fruits.remove("A")
+fruits.remove("B")
+sys.println("Test 11 - multiple removes size: " + sys.int2str(fruits.size()))
+
+sys.println("All Set tests completed!")

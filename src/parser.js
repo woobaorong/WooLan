@@ -83,8 +83,24 @@ class Parser {
   }
   parseImport() {
     const t = this.eatKw('import');
-    const names = [this.eat('IDENT').value];
-    while (this.atPunct(',')) { this.advance(); names.push(this.eat('IDENT').value); }
+    const names = [];
+    // Parse first module path (supports a.b.c)
+    let path = this.eat('IDENT').value;
+    while (this.atPunct('.')) {
+      this.advance();
+      path += '.' + this.eat('IDENT').value;
+    }
+    names.push(path);
+    // Support comma-separated imports
+    while (this.atPunct(',')) {
+      this.advance();
+      path = this.eat('IDENT').value;
+      while (this.atPunct('.')) {
+        this.advance();
+        path += '.' + this.eat('IDENT').value;
+      }
+      names.push(path);
+    }
     return this.loc({ kind: 'Import', names }, t);
   }
 
@@ -114,13 +130,34 @@ class Parser {
     throw new ParseError('expected a type', t);
   }
 
-  parseVarDecl() {
-    const start = this.here();
-    const varType = this.parseType();
+  // Parse type with optional array brackets: type or type[] or type[size]
+  parseTypeWithArray() {
+    const typeInfo = this.parseType();
     let isArray = false, arraySize = null;
     if (this.atPunct('[')) {
       this.advance();
-      arraySize = this.eat('INT').value;
+      if (this.atPunct(']')) {
+        this.advance();
+        isArray = true;
+      } else {
+        arraySize = this.eat('INT').value;
+        this.eatPunct(']');
+        isArray = true;
+      }
+    }
+    return { name: typeInfo.name, line: typeInfo.line, col: typeInfo.col, isArray, arraySize };
+  }
+
+  parseVarDecl() {
+    const start = this.here();
+    const varType = this.parseType();
+    let isArray = false;
+    // Only support type[] syntax, not type[size]
+    if (this.atPunct('[')) {
+      this.advance();
+      if (!this.atPunct(']')) {
+        throw new ParseError('array type must be type[], use type[size] in initialization', this.peek());
+      }
       this.eatPunct(']');
       isArray = true;
     }
@@ -130,7 +167,7 @@ class Parser {
       this.advance();
       init = this.parseExpression();
     }
-    return this.loc({ kind: 'VarDecl', varType: varType.name, varTypeLine: varType.line, varTypeCol: varType.col, name, isArray, arraySize, init }, { line: start.line, col: start.col });
+    return this.loc({ kind: 'VarDecl', varType: varType.name, varTypeLine: varType.line, varTypeCol: varType.col, name, isArray, init }, { line: start.line, col: start.col });
   }
 
   parseClass() {
@@ -158,16 +195,52 @@ class Parser {
 
   parseClassMember() {
     const start = this.here();
+    // Check for constructor: init(...)
+    const t0 = this.peek(0);
+    const t1 = this.peek(1);
+    if (t0 && t0.type === 'IDENT' && t0.value === 'init' && t1 && t1.type === 'PUNCT' && t1.value === '(') {
+      // Constructor: no return type allowed
+      this.advance(); // consume 'init'
+      this.eatPunct('(');
+      const params = [];
+      if (!this.atPunct(')')) {
+        do {
+          const pt = this.parseTypeWithArray();
+          const pname = this.eat('IDENT').value;
+          params.push({ type: pt.isArray ? pt.name + '[]' : pt.name, name: pname, line: pt.line, col: pt.col });
+        } while (this.atPunct(',') && (this.advance(), true) && !this.atPunct(')'));
+      }
+      this.eatPunct(')');
+      let body = null;
+      if (this.atPunct('{')) body = this.parseBlock();
+      else if (this.atPunct(';')) this.advance();
+      return this.loc({ kind: 'Method', returnType: null, name: 'init', params, body, isConstructor: true }, { line: start.line, col: start.col });
+    }
     const retType = this.parseType();
+    // Check for array type: type[size] or type[]
+    let isArray = false, arraySize = null;
+    if (this.atPunct('[')) {
+      this.advance();
+      if (this.atPunct(']')) {
+        // type[] - dynamic array (no size)
+        this.advance();
+        isArray = true;
+      } else {
+        // type[size] - fixed size array
+        arraySize = this.eat('INT').value;
+        this.eatPunct(']');
+        isArray = true;
+      }
+    }
     const name = this.eat('IDENT').value;
     if (this.atPunct('(')) {
       this.eatPunct('(');
       const params = [];
       if (!this.atPunct(')')) {
         do {
-          const pt = this.parseType();
+          const pt = this.parseTypeWithArray();
           const pname = this.eat('IDENT').value;
-          params.push({ type: pt.name, name: pname, line: pt.line, col: pt.col });
+          params.push({ type: pt.isArray ? pt.name + '[]' : pt.name, name: pname, line: pt.line, col: pt.col });
         } while (this.atPunct(',') && (this.advance(), true) && !this.atPunct(')'));
       }
       this.eatPunct(')');
@@ -178,7 +251,7 @@ class Parser {
     }
     let init = null;
     if (this.atOp('=')) { this.advance(); init = this.parseExpression(); }
-    return this.loc({ kind: 'Field', varType: retType.name, varTypeLine: retType.line, varTypeCol: retType.col, name, init }, { line: start.line, col: start.col });
+    return this.loc({ kind: 'Field', varType: retType.name, varTypeLine: retType.line, varTypeCol: retType.col, name, isArray, arraySize, init }, { line: start.line, col: start.col });
   }
 
   parseBlock() {
@@ -338,8 +411,38 @@ class Parser {
         if (t.value === 'false') { this.advance(); return this.loc({ kind: 'BoolLit', value: false }, t); }
         if (t.value === 'null') { this.advance(); return this.loc({ kind: 'NullLit' }, t); }
         if (t.value === 'this') { this.advance(); return this.loc({ kind: 'This' }, t); }
+        // Check for array constructor: char[5], int[10]
+        if (['int', 'float', 'bool', 'char'].includes(t.value) && this.peek(1) && this.peek(1).type === 'PUNCT' && this.peek(1).value === '[') {
+          const typeName = t.value;
+          this.advance(); // consume type keyword
+          this.eatPunct('[');
+          let size = null;
+          if (!this.atPunct(']')) {
+            size = this.parseExpression();
+          }
+          this.eatPunct(']');
+          return this.loc({ kind: 'ArrayCtor', elemType: typeName, size }, t);
+        }
         throw new ParseError(`unexpected keyword '${t.value}'`, t);
-      case 'IDENT': this.advance(); return this.loc({ kind: 'Ident', name: t.value }, t);
+      case 'IDENT':
+        // Check for array constructor: String[5], MyClass[10]
+        // Only if IDENT looks like a type name (starts with uppercase)
+        if (this.peek(1) && this.peek(1).type === 'PUNCT' && this.peek(1).value === '[') {
+          const typeName = t.value;
+          // Only treat as array constructor if it looks like a type name
+          if (typeName[0] === typeName[0].toUpperCase() && typeName[0] !== typeName[0].toLowerCase()) {
+            this.advance(); // consume IDENT
+            this.eatPunct('[');
+            let size = null;
+            if (!this.atPunct(']')) {
+              size = this.parseExpression();
+            }
+            this.eatPunct(']');
+            return this.loc({ kind: 'ArrayCtor', elemType: typeName, size }, t);
+          }
+        }
+        this.advance();
+        return this.loc({ kind: 'Ident', name: t.value }, t);
       case 'PUNCT':
         if (t.value === '(') { this.advance(); const e = this.parseExpression(); this.eatPunct(')'); return e; }
         if (t.value === '[') {

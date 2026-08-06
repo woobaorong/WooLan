@@ -16,9 +16,8 @@ class Talker {
 class Person extends Walker, Talker {
     String name = ""
 
-    Person init(String n) {
+    init(String n) {
         this.name = n
-        return this
     }
 
     void intro() {

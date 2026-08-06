@@ -85,6 +85,10 @@
       "name": "entity.name.function.woolan",
       "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=\\()"
     },
+    "constructors": {
+      "name": "entity.name.function.constructor.woolan",
+      "match": "\\binit\\b"
+    },
     "operators": {
       "name": "keyword.operator.woolan",
       "match": "(==|!=|<=|>=|&&|\\|\\||[+\\-*/=<>!])"

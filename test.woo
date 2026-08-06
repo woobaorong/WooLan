@@ -1,0 +1,23 @@
+import examples
+
+class Test {
+    String name = "Hello, Woolan!"
+    Map m = Map()
+    void test() {
+        sys.println(this.name)
+    }
+
+    init(String name) {
+        this.name = name
+        this.test()
+        sys.wait(Callbacker(), 100)
+        this.m.put("a", 10)
+        sys.println(this.m.get("a"))
+    }
+}
+
+Test t = Test("xxxxx")
+
+
+String str="asdad"
+sys.print(str)

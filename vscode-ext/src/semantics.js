@@ -14,6 +14,7 @@
 
 const { tokenize } = require('../../src/lexer');
 const { parse } = require('../../src/parser');
+const { resolveImport } = require('../../src/modules');
 const path = require('path');
 const fs = require('fs');
 
@@ -159,7 +160,11 @@ class Analyzer {
     type = canonical(type);
     if (this.classes[type]) {
       for (const c of this.classes[type].mro) {
-        if (this.classes[c].fields[name]) return this.classes[c].fields[name].varType;
+        if (this.classes[c].fields[name]) {
+          const field = this.classes[c].fields[name];
+          // Handle array type
+          return field.isArray ? field.varType + '[]' : field.varType;
+        }
       }
     }
     return null;
@@ -242,11 +247,16 @@ class Analyzer {
   varDecl(node) {
     if (node.isArray) {
       if (!this.isKnownType(node.varType)) this.diag({ line: node.varTypeLine, col: node.varTypeCol }, `unknown type '${node.varType}'`);
-      if (node.init && node.init.kind === 'ArrayLit') {
-        node.init.elements.forEach((e, i) => {
-          const et = this.infer(e);
-          if (et !== 'unknown' && !this.assignable(et, node.varType)) this.diag(e, `array element ${i}: cannot assign ${this.typeName(et)} to ${node.varType}`);
-        });
+      if (node.init) {
+        if (node.init.kind === 'ArrayLit') {
+          node.init.elements.forEach((e, i) => {
+            const et = this.infer(e);
+            if (et !== 'unknown' && !this.assignable(et, node.varType)) this.diag(e, `array element ${i}: cannot assign ${this.typeName(et)} to ${node.varType}`);
+          });
+        } else if (node.init.kind === 'ArrayCtor') {
+          const sz = this.infer(node.init.size);
+          if (sz !== 'int' && sz !== 'unknown') this.diag(node.init.size, 'array size must be int');
+        }
       }
       this.declare(node.name, node.varType + '[]');
       return;
@@ -272,12 +282,25 @@ class Analyzer {
     // field initializers
     for (const m of node.members) {
       if (m.kind === 'Field') {
+        // Handle array type
+        const fieldType = m.isArray ? m.varType + '[]' : m.varType;
         if (!this.isKnownType(m.varType)) this.diag({ line: m.varTypeLine, col: m.varTypeCol }, `unknown type '${m.varType}'`);
         if (m.init) {
           this.push();
-          const vt = this.infer(m.init);
+          // Handle array initializers
+          if (m.isArray && m.init.kind === 'ArrayLit') {
+            m.init.elements.forEach((e, i) => {
+              const et = this.infer(e);
+              if (et !== 'unknown' && !this.assignable(et, m.varType)) this.diag(e, `array element ${i}: cannot assign ${this.typeName(et)} to ${m.varType}`);
+            });
+          } else if (m.isArray && m.init.kind === 'ArrayCtor') {
+            const sz = this.infer(m.init.size);
+            if (sz !== 'int' && sz !== 'unknown') this.diag(m.init.size, 'array size must be int');
+          } else {
+            const vt = this.infer(m.init);
+            if (vt !== 'unknown' && !this.assignable(vt, m.varType)) this.diag(m.init, `cannot assign ${this.typeName(vt)} to ${fieldType}`);
+          }
           this.pop();
-          if (vt !== 'unknown' && !this.assignable(vt, m.varType)) this.diag(m.init, `cannot assign ${this.typeName(vt)} to ${m.varType}`);
         }
       }
     }
@@ -289,12 +312,19 @@ class Analyzer {
   }
 
   analyzeMethod(node) {
-    if (!this.isKnownType(node.returnType)) this.diag(node, `unknown return type '${node.returnType}'`);
+    // Constructor (init) has no return type; automatically returns 'this'
+    if (!node.isConstructor && node.returnType !== null && !this.isKnownType(canonical(node.returnType))) {
+      this.diag(node, `unknown return type '${node.returnType}'`);
+    }
     const savedRet = this.returnType;
-    this.returnType = node.returnType;
+    // Constructor returns the class type (this)
+    this.returnType = node.isConstructor ? this.thisType : node.returnType;
     this.push();
     for (const p of node.params) {
-      if (!this.isKnownType(p.type)) this.diag(p, `unknown type '${p.type}'`);
+      // Handle array parameter types like 'char[]'
+      const paramType = canonical(p.type);
+      const baseType = paramType.replace('[]', '');
+      if (!this.isKnownType(baseType)) this.diag(p, `unknown type '${p.type}'`);
       this.declare(p.name, p.type);
     }
     if (node.body) for (const s of node.body.body) this.stmt(s);
@@ -315,6 +345,7 @@ class Analyzer {
       case 'This': return this.thisType || 'unknown';
       case 'Ident': return this.inferIdent(node);
       case 'ArrayLit': return 'Object[]';
+      case 'ArrayCtor': return node.elemType + '[]';
       case 'Field': return this.inferField(node);
       case 'Index': return this.inferIndex(node);
       case 'Call': return this.inferCall(node);
@@ -568,23 +599,25 @@ function loadBuiltinInterfaces(filePath) {
 function processImports(ast, filePath) {
   const importedClasses = {};
   const baseDir = path.dirname(filePath);
+  const projectRoot = baseDir;
+
+  // Parse function for resolveImport
+  const parseFn = (src) => parse(tokenize(src));
 
   for (const stmt of ast.body) {
     if (stmt.kind !== 'Import') continue;
 
     for (const name of stmt.names) {
-      const modulePath = path.join(baseDir, name + '.woo');
-
       try {
-        if (!fs.existsSync(modulePath)) continue;
-        const moduleSrc = fs.readFileSync(modulePath, 'utf8');
-        const moduleAst = parse(tokenize(moduleSrc));
+        const result = resolveImport(name, baseDir, projectRoot, parseFn);
 
-        // Use buildClasses to properly process the module with MRO
-        const moduleClasses = buildClasses(moduleAst);
-        for (const [className, classInfo] of Object.entries(moduleClasses)) {
-          if (!importedClasses[className]) {
-            importedClasses[className] = classInfo;
+        if (!result) continue;
+
+        if (result.type === 'file') {
+          loadModuleClasses(result.path, importedClasses);
+        } else if (result.type === 'package') {
+          for (const pkgFile of result.paths) {
+            loadModuleClasses(pkgFile, importedClasses);
           }
         }
       } catch (e) {
@@ -594,6 +627,22 @@ function processImports(ast, filePath) {
   }
 
   return importedClasses;
+}
+
+// Load classes from a single module file
+function loadModuleClasses(filePath, importedClasses) {
+  try {
+    const moduleSrc = fs.readFileSync(filePath, 'utf8');
+    const moduleAst = parse(tokenize(moduleSrc));
+    const moduleClasses = buildClasses(moduleAst);
+    for (const [className, classInfo] of Object.entries(moduleClasses)) {
+      if (!importedClasses[className]) {
+        importedClasses[className] = classInfo;
+      }
+    }
+  } catch (e) {
+    // Ignore parse errors
+  }
 }
 
 module.exports = { analyzeSemantics, Analyzer };

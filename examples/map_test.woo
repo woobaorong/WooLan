@@ -1,0 +1,67 @@
+// Map Test - Test all Map methods
+
+// Test 1: Create empty map
+Map map1 = Map()
+sys.println("Test 1 - empty map size: " + sys.int2str(map1.size()))
+
+// Test 2: Put key-value pairs
+map1.put("name", "Alice")
+map1.put("age", "25")
+sys.println("Test 2 - put size: " + sys.int2str(map1.size()))
+
+// Test 3: Get value
+String name = map1.get("name")
+sys.println("Test 3 - get('name'): " + name)
+
+// Test 4: Contains key
+bool hasKey = map1.containsKey("name")
+sys.println("Test 4 - containsKey('name'): " + sys.bool2str(hasKey))
+
+// Test 5: Contains value (manual check)
+List vals = map1.values()
+bool hasValue = false
+for (int i = 0; i < vals.size(); i = i + 1) {
+    if (vals.get(i) == "Alice") {
+        hasValue = true
+    }
+}
+sys.println("Test 5 - containsValue('Alice'): " + sys.bool2str(hasValue))
+
+// Test 6: Remove key
+map1.put("temp", "value")
+map1.remove("temp")
+sys.println("Test 6 - remove size: " + sys.int2str(map1.size()))
+
+// Test 7: Get keys
+List keys = map1.keys()
+sys.println("Test 7 - keys size: " + sys.int2str(keys.size()))
+
+// Test 8: Get values
+List values = map1.values()
+sys.println("Test 8 - values size: " + sys.int2str(values.size()))
+
+// Test 9: Is empty (check size)
+bool empty = map1.size() == 0
+sys.println("Test 9 - isEmpty (size==0): " + sys.bool2str(empty))
+
+// Test 10: Clear
+Map map2 = Map()
+map2.put("a", "1")
+map2.clear()
+sys.println("Test 10 - clear size: " + sys.int2str(map2.size()))
+
+// Test 11: Update existing key
+map1.put("name", "Bob")
+sys.println("Test 11 - update 'name': " + map1.get("name"))
+
+// Test 12: Get non-existent key
+String missing = map1.get("missing")
+sys.println("Test 12 - get('missing'): null")
+
+// Test 13: Integer keys
+Map numMap = Map()
+numMap.put(1, "one")
+numMap.put(2, "two")
+sys.println("Test 13 - int keys get(1): " + numMap.get(1))
+
+sys.println("All Map tests completed!")

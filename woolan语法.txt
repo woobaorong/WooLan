@@ -14,8 +14,11 @@ int float bool char
 int xxx=12
 
 定义数组,长度固定不可变
-int[3] xxx= [1,2,3]
-char[3] xxx= ['a','b','c']
+int[] xxx= [1,2,3]
+char[] xxx= ['a','b','c']
+char[] str=char[5]
+People[] peoples=People[3]
+int[] empty  //先不分配内存
 
 访问数组 int xx=xxx[0] 
 
@@ -26,12 +29,15 @@ class XX extends A,B,C{
 	void d (){
 		return this.a 
 	}
-    XX init (){
-	    return this
+    init (){
+	    this.a=13
+	}
+	init (int num){
+	    this.a=num
 	}
 }
 
-创建对象,先执行字段赋值操作,比如 a=12,b=13.5,然后调用构造函数(如果提供了的话),构造函数一律是init(),自动调用,这个函数名系统占用
+创建对象,先执行字段赋值操作,比如 a=12,b=13.5,然后调用构造函数(如果提供了的话),构造函数一律是init(),自动调用,这个函数名系统占用,无需写返回类型和retrun
 XX xx = XX()  //无需new
 
 

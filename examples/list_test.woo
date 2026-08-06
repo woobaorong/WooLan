@@ -1,0 +1,70 @@
+// List Test - Test all List methods
+
+// Test 1: Create empty list
+List list1 = List()
+sys.println("Test 1 - empty list size: " + sys.int2str(list1.size()))
+
+// Test 2: Add elements
+list1.add("Hello")
+list1.add("World")
+sys.println("Test 2 - add elements size: " + sys.int2str(list1.size()))
+
+// Test 3: Get element
+String elem = list1.get(0)
+sys.println("Test 3 - get(0): " + elem)
+
+// Test 4: Set element
+list1.set(0, "Hi")
+sys.println("Test 4 - set(0,'Hi'): " + list1.get(0))
+
+// Test 5: Contains
+bool contains = list1.contains("World")
+sys.println("Test 5 - contains('World'): " + sys.bool2str(contains))
+
+// Test 6: indexOf
+list1.add("Test")
+list1.add("World")
+int idx = list1.indexOf("World")
+sys.println("Test 6 - indexOf('World'): " + sys.int2str(idx))
+
+// Test 7: Remove by index
+list1.removeAt(2)
+sys.println("Test 7 - removeAt(2) size: " + sys.int2str(list1.size()))
+
+// Test 8: Insert at index (using set)
+List list3 = List()
+list3.add("A")
+list3.add("C")
+// Note: List doesn't have insert, use add and manual shifting
+sys.println("Test 8 - insert: skipped (use add + set pattern)")
+
+// Test 9: Clear
+List list2 = List()
+list2.add("A")
+list2.add("B")
+list2.clear()
+sys.println("Test 9 - clear size: " + sys.int2str(list2.size()))
+
+// Test 10: Is empty
+bool empty = list2.isEmpty()
+sys.println("Test 10 - isEmpty: " + sys.bool2str(empty))
+
+// Test 11: Iterate with for
+List nums = List()
+nums.add(1)
+nums.add(2)
+nums.add(3)
+int sum = 0
+for (int i = 0; i < nums.size(); i = i + 1) {
+    sum = sum + nums.get(i)
+}
+sys.println("Test 11 - iterate sum: " + sys.int2str(sum))
+
+// Test 12: List of different types
+List mixed = List()
+mixed.add(123)
+mixed.add("string")
+mixed.add(true)
+sys.println("Test 12 - mixed list size: " + sys.int2str(mixed.size()))
+
+sys.println("All List tests completed!")

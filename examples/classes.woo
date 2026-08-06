@@ -3,9 +3,8 @@
 class Animal {
     String name = "animal"
 
-    Animal init(String n) {
+    init(String n) {
         this.name = n
-        return this
     }
 
     void speak() {

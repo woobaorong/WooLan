@@ -1,13 +1,18 @@
-// arrays.woo - fixed-length typed arrays
-int[3] arr = [1, 2, 3]
+// arrays.woo - typed arrays
+int[] arr = [1, 2, 3]
 sys.println(arr[0])
 sys.println(arr[2])
 arr[1] = 42
 sys.println(arr[1])
 
-char[3] chs = ['a', 'b', 'c']
+char[] chs = ['a', 'b', 'c']
 sys.println(chs[0])
 sys.println(chs[2])
+
+// allocate with size
+int[] nums = int[5]
+nums[0] = 10
+sys.println(nums[0])
 
 // iterate with for
 int sum = 0

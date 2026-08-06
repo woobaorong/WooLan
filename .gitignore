@@ -4,7 +4,6 @@ node_modules/
 # VSCode extension build output
 vscode-ext/dist/
 vscode-ext/node_modules/
-vscode-ext/*.vsix
 
 # Test files
 test_*.woo

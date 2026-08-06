@@ -5,7 +5,7 @@ class Date {
     // Constructor: creates a Date instance
     // Date() - current time
     // Date(timestamp) - from Unix timestamp in milliseconds
-    Date init(int timestamp)
+    init(int timestamp)
 
     // Get current timestamp in milliseconds
     int now()

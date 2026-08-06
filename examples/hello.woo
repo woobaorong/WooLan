@@ -1,3 +1,4 @@
+package examples
 import TimeCallbacker
 // hello.woo - basic variables, types, strict typing, conversions
 sys.println("Hello, Woolan!")

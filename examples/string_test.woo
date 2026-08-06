@@ -1,0 +1,88 @@
+// String Test - Test all String methods
+
+// Test 1: String creation and length
+String s1 = "Hello"
+sys.println("Test 1 - length: " + sys.int2str(s1.length()))
+
+// Test 2: charAt
+char c = s1.charAt(0)
+sys.println("Test 2 - charAt(0): " + sys.char2str(c))
+
+// Test 3: substring
+String s2 = s1.substring(1)
+sys.println("Test 3 - substring(1): " + s2)
+
+// Test 4: substringRange
+String s3 = s1.substringRange(1, 4)
+sys.println("Test 4 - substringRange(1,4): " + s3)
+
+// Test 5: indexOf
+String s4 = "Hello World"
+int idx = s4.indexOf("World")
+sys.println("Test 5 - indexOf('World'): " + sys.int2str(idx))
+
+// Test 6: equals
+String s5 = "Hello"
+bool eq = s1.equals(s5)
+sys.println("Test 6 - equals: " + sys.bool2str(eq))
+
+// Test 7: toLowerCase
+String s6 = "HELLO"
+sys.println("Test 7 - toLowerCase: " + s6.toLowerCase())
+
+// Test 8: toUpperCase
+String s7 = "hello"
+sys.println("Test 8 - toUpperCase: " + s7.toUpperCase())
+
+// Test 9: startsWith
+bool sw = s1.startsWith("He")
+sys.println("Test 9 - startsWith('He'): " + sys.bool2str(sw))
+
+// Test 10: endsWith
+bool ew = s1.endsWith("lo")
+sys.println("Test 10 - endsWith('lo'): " + sys.bool2str(ew))
+
+// Test 11: contains
+bool ct = s4.contains("World")
+sys.println("Test 11 - contains('World'): " + sys.bool2str(ct))
+
+// Test 12: replace
+String s8 = "hello world hello"
+String s9 = s8.replace("hello", "hi")
+sys.println("Test 12 - replace: " + s9)
+
+// Test 13: split
+String s10 = "a,b,c"
+List parts = s10.split(",")
+sys.println("Test 13 - split size: " + sys.int2str(parts.size()))
+
+// Test 14: trim
+String s11 = "  hello  "
+sys.println("Test 14 - trim: '" + s11.trim() + "'")
+
+// Test 15: toInt
+String s12 = "12345"
+int num = s12.toInt()
+sys.println("Test 15 - toInt: " + sys.int2str(num))
+
+// Test 16: toFloat
+String s13 = "3.14"
+float f = s13.toFloat()
+sys.println("Test 16 - toFloat: " + sys.float2str(f))
+
+// Test 17: toString
+String s14 = s1.toString()
+sys.println("Test 17 - toString: " + s14)
+
+// Test 18: toCharArray
+// Note: toCharArray returns char[] which is handled internally
+sys.println("Test 18 - toCharArray: skipped (internal use)")
+
+// Test 19: String concatenation
+String s15 = "Hello" + " " + "World"
+sys.println("Test 19 - concat: " + s15)
+
+// Test 20: initFromChars (internal method)
+sys.println("Test 20 - initFromChars: skipped (internal use)")
+
+sys.println("All tests completed!")

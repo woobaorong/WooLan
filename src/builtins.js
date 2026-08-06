@@ -114,7 +114,12 @@ const StringClass = new NativeClass('String', {
   substring(interp, inst, args) {
     const s = inst.native;
     const start = asInt(args[0]);
-    const end = args.length > 1 ? asInt(args[1]) : s.length;
+    return interp.makeString(s.slice(start));
+  },
+  substringRange(interp, inst, args) {
+    const s = inst.native;
+    const start = asInt(args[0]);
+    const end = asInt(args[1]);
     return interp.makeString(s.slice(start, end));
   },
   indexOf(interp, inst, args) { return makeInt(inst.native.indexOf(asJsString(args[0]))); },
@@ -138,6 +143,10 @@ const StringClass = new NativeClass('String', {
   toInt(interp, inst) { return makeInt(parseInt(inst.native, 10) || 0); },
   toFloat(interp, inst) { return makeFloat(parseFloat(inst.native) || 0); },
   toString(interp, inst) { return interp.makeString(inst.native); },
+  toCharArray(interp, inst) {
+    const chars = inst.native.split('').map(c => makeChar(c));
+    return interp.makeArray('char', chars);
+  },
 }, {
   construct(interp, args) {
     if (args.length === 0) return interp.makeString('');
@@ -362,6 +371,14 @@ const SysClass = new NativeClass('sys', {
     if (args[0] instanceof Val && args[0].type === 'char') return interp.makeString(args[0].value);
     throw new TypeError('expected char');
   },
+  char2int(interp, inst, args) {
+    if (args[0] instanceof Val && args[0].type === 'char') return makeInt(args[0].value.charCodeAt(0));
+    throw new TypeError('expected char');
+  },
+  int2char(interp, inst, args) {
+    const i = asInt(args[0]);
+    return makeChar(String.fromCharCode(i));
+  },
   int2str(interp, inst, args) { return interp.makeString(String(asInt(args[0]))); },
   int2float(interp, inst, args) { return makeFloat(asInt(args[0])); },
   float2int(interp, inst, args) { return makeInt(Math.trunc(asFloat(args[0]))); },
@@ -372,6 +389,20 @@ const SysClass = new NativeClass('sys', {
   bool2str(interp, inst, args) {
     if (args[0] instanceof Val && args[0].type === 'bool') return interp.makeString(args[0].value ? 'true' : 'false');
     throw new TypeError('expected bool');
+  },
+  charArrayToStr(interp, inst, args) {
+    // Convert char[] to String
+    const arr = args[0];
+    if (!arr || !arr.items) throw new TypeError('expected char[]');
+    const chars = arr.items.map(c => c instanceof Val && c.type === 'char' ? c.value : '').join('');
+    return interp.makeString(chars);
+  },
+  strToCharArray(interp, inst, args) {
+    // Convert String to char[]
+    const s = args[0];
+    if (!(s instanceof WooInstance) || s.classDef !== StringClass) throw new TypeError('expected String');
+    const chars = s.native.split('').map(c => makeChar(c));
+    return interp.makeArray('char', chars);
   },
   is(interp, inst, args) {
     const cls = args[0];

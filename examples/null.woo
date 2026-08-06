@@ -10,9 +10,8 @@ sys.println(sys.bool2str(o == null))
 class Node {
     int val = 0
     Node next = null
-    Node init(int v) {
+    init(int v) {
         this.val = v
-        return this
     }
 }
 
